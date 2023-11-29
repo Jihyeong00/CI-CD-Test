@@ -12,7 +12,7 @@
     "formatter": "prettier --write --cache \"src/**/*.{ts,tsx}\"",
     "install": "husky install",
     "deploy": "aws s3 sync ./dist s3://kkiri-test --profile=zero",
-    "invalidate": "aws cloudfront create-invalidation --profile=zero --distribution-id E1J3R72HP1QLHU --paths / /index.html /mockServiceWorker.js /manifest.json /assets"
+    "invalidate": "aws cloudfront create-invalidation --profile=zero --distribution-id E1J3R72HP1QLHU --paths / /index.html /mockServiceWorker.js /manifest.json /assets /_redirects"
   },
   "lint-staged": {
     "src/**/*.{js,ts,jsx,tsx}": [
