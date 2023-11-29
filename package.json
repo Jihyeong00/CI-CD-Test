@@ -10,7 +10,9 @@
     "preview": "vite preview",
     "lint:fix": "eslint --fix --cache \"src/**/*.{ts,tsx}\"",
     "formatter": "prettier --write --cache \"src/**/*.{ts,tsx}\"",
-    "install": "husky install"
+    "install": "husky install",
+    "deploy": "aws s3 sync ./build s3://kkiri-test --zero",
+    "invalidate": "aws cloudfront create-invalidation --profile=zero --distribution-id E1J3R72HP1QLHU --paths / /index.html /mockServiceWorker.js /manifest.json /assets"
   },
   "lint-staged": {
     "src/**/*.{js,ts,jsx,tsx}": [
