@@ -23,7 +23,7 @@ jobs:
             ${{ runner.OS }}-
 
       - name: Install Dependencies
-        run: npm instaill
+        run: npm install
 
       - name: Build # 빌드
         run: npm run build
