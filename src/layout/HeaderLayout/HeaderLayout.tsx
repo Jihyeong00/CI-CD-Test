@@ -71,4 +71,3 @@ export const HeaderLayOut = () => {
     </ErrorBoundary>
   );
 };
-export default HeaderLayOut;
