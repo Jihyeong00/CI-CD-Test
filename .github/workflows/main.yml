@@ -1,16 +1,16 @@
-name: Test deploy                    # Workflow 이름
-on:                                  # Event 감지
+name: Deploy # Workflow 이름
+on: # Event 감지
   push:
     branches:
-      - dev                        
-jobs:                                # Job 설정
+      - dev # 해당 브랜치의 푸쉬가 일어날 때 CI/CD를 진행하겠다는 뜻
+jobs:
   build:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-22.04
     steps:
-      - name: Checkout source code.   # Repo checkout
-        uses: actions/checkout@v3
-      
-      - name: Check Node v            # Node v 확인
+      - name: Checkout source code.
+        uses: actions/checkout@v2
+
+      - name: Check Node v # 노드 버전 확인
         run: node -v
         
       - name: Cache node modules      # node modules 캐싱
@@ -21,23 +21,37 @@ jobs:                                # Job 설정
           restore-keys: |
             ${{ runner.OS }}-build-
             ${{ runner.OS }}-
-        
-      - name: Install dependencies    # 의존 파일 설치
-        run: npm install
-      
-      - name: Generate build          # React Build
-        run: npm run build
 
-      - name: Configure AWS credentials # aws에 접근하기 위한 권한을 받아옵니다.
+      - name: Install Dependencies
+        run: npm instaill
+
+      - name: Build # 빌드
+        run: npm run build
+        env:
+          CI: ""
+
+      - name: zip create
+        # zip 파일을 만듭니다(파일명은 자유, 대신 아래 workflow에 적을 파일명과 동일하게 맞춰주세요).
+        run: zip -qq -r ./dist.zip .
+        shell: bash
+
+      - name: Configure AWS credentials
         uses: aws-actions/configure-aws-credentials@v1
         with:
-          aws-access-key-id: ${{ secrets.AWS_S3_ACCESS_KEY_ID }}
-          aws-secret-access-key: ${{ secrets.AWS_S3_SECRET_ACCESS_KEY_ID }}
-          aws-region: ap-northeast-2
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ secrets.AWS_REGION }}
 
-      - name: Deploy                  # S3에 배포하기
+      - name: Upload to S3 # Upload build file to S3
+        env:
+          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
         run: |
-          aws s3 cp \
-            --recursive \
-            --region ap-northeast-2 \
-            build s3://${{ secrets.AWS_S3_BUCKET_NAME }}
+          aws s3 cp --region ap-northeast-2 ./dist.zip s3://${{env.S3_BUCKET_NAME}}/dist.zip
+
+      - name: CloudFront Invalidation
+        env:
+          CLOUD_FRONT_ID: ${{ secrets.AWS_CLOUDFRONT_ID}}
+        run: |
+          aws cloudfront create-invalidation \
+            --distribution-id $CLOUD_FRONT_ID --paths /*
